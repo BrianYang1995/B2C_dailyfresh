@@ -6,6 +6,7 @@ from db.basemodel import BaseModel
 
 class User(AbstractUser, BaseModel):
     """用户模型"""
+
     class Meta:
         db_table = 'df_user'
         verbose_name = '用户'

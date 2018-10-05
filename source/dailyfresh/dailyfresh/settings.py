@@ -145,3 +145,14 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 400,
 }
 
+# 发送邮件配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# smtp服务器地址
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+# 发送邮件邮箱
+EMAIL_HOST_USER = 'yangz_forwork@163.com'
+# 邮箱设置的授权
+EMAIL_HOST_PASSWORD = 'yang9110'
+# 收件人看到的发件人
+EMAIL_FROM = '天天生鲜<yangz_forwork@163.com>'
