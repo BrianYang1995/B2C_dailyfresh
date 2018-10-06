@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.views.generic import View
 from django.conf import settings
-from django.core.mail import send_mail
 
 from user.models import User
-
+from celery_task.tasks import send_register_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 import re
@@ -59,17 +58,13 @@ class RegisterView(View):
             return render(request, 'register.html', {'errmsg': '创建用户失败'})
 
         # 发送用户激活邮件
+        # 生成token
         serializer = Serializer(settings.SECRET_KEY, 3600)
         token = serializer.dumps({'confirm': user.id})
         token = token.decode()
 
-        # 邮件内容
-        subject = '欢迎注册天天生鲜'
-        message = ''
-        from_email = settings.EMAIL_HOST_USER
-        html_message = '<h2>欢迎%s注册天天生鲜</h2>点击下面邮箱激活<p><a href="http://127.0.0.1:8000/user/active/%s">http://127.0.0.1:8000/user/active/%s</a></p>' % (user.username, token, token)
-
-        send_mail(subject, message, from_email, [email], html_message=html_message)
+        # 发送邮件：使用celery任务队列
+        send_register_active_email.delay(email, user.username, token)
 
         return redirect('goods:index')
 
