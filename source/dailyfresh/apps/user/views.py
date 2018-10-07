@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.views.generic import View
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
 
 from user.models import User
 from celery_task.tasks import send_register_active_email
@@ -88,6 +89,48 @@ class ActiveView(View):
             return HttpResponse('验证成功')
         except SignatureExpired:
             return HttpResponse('验证连接过期')
+
+
+class LoginView(View):
+    """用户登录"""
+    def get(self, request):
+        """返回登录页面"""
+        if 'username' in request.COOKIES:
+            username = request.COOKIES.get('username')
+            checked = 'checked'
+        else:
+            username = ''
+            checked = ''
+        return render(request, 'login.html', {'username': username, 'checked': checked})
+
+    def post(self, request):
+        """用户登录处理"""
+        # 接收参数
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # 校验参数
+        # 完整性
+        if not all([username, password]):
+            return render(request, 'login.html', {'errmsg': '请将数据填写完整'})
+
+        # 验证用户名和密码
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return render(request, 'login.html', {'errmsg': '用户名或密码错误'})
+
+        else:
+            login(request, user)
+            response = redirect('goods:index')
+            remember = request.POST.get('remember')
+            if remember == 'on':
+                response.set_cookie('username', username)
+            else:
+                response.delete_cookie('username')
+            return response
+
+
 
 
 
