@@ -16,6 +16,17 @@ class User(AbstractUser, BaseModel):
         return self.username
 
 
+class AddressManager(models.Manager):
+    """自定义Address模型管理器"""
+
+    def get_default_address(self, user):
+        try:
+            addr = Address.objects.get(user_id=user.id, is_default=True)
+        except Address.DoesNotExist:
+            addr = None
+
+        return addr
+
 class Address(BaseModel):
     """用户地址模型"""
     user = models.ForeignKey('User', verbose_name='所属账户', on_delete=models.CASCADE)
@@ -25,6 +36,7 @@ class Address(BaseModel):
     phone = models.CharField(max_length=11, verbose_name='联系方式')
     is_default = models.BooleanField(default=False, verbose_name='是否默认')
 
+    objects = AddressManager()
     class Meta:
         db_table = 'df_address'
         verbose_name = '地址'

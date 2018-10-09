@@ -3,15 +3,20 @@ from django.views.generic import View
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 
-from user.models import User
+
 from celery_task.tasks import send_register_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 import re
+from django_redis import get_redis_connection
+
+from utils.mixin import LoginRequestMixIn
+from user.models import User, Address
+from goods.models import GoodsSKU
 
 
 class RegisterView(View):
-    '''用户注册'''
+    """用户注册"""
     def get(self, request):
         """返回注册页面"""
         return render(request, 'register.html')
@@ -122,7 +127,8 @@ class LoginView(View):
 
         else:
             login(request, user)
-            response = redirect('goods:index')
+            next_page = request.GET.get('next', 'goods:index')
+            response = redirect(next_page)
             remember = request.POST.get('remember')
             if remember == 'on':
                 response.set_cookie('username', username)
@@ -131,10 +137,88 @@ class LoginView(View):
             return response
 
 
+class LogoutView(View):
+    """登出"""
+    def get(self, request):
+        """用户登出"""
+        logout(request)
+        return redirect('goods:index')
 
 
+class UserAddressView(LoginRequestMixIn, View):
+    """用户中心收货地址"""
+    def get(self, request):
+        # 获取默认收货地址
+        user = request.user
+        addr = Address.objects.get_default_address(user)
+        return render(request, 'user_center_site.html', {'page': 'address', 'addr': addr})
+
+    def post(self, request):
+        """用户收获地址提交"""
+        # 接收数据
+        receiver = request.POST.get('receiver')
+        address = request.POST.get('address')
+        zip_code = request.POST.get('zip_code')
+        phone = request.POST.get('phone')
+        # 验证数据完整性
+        if not all([receiver, address, zip_code, phone]):
+            return render(request, 'user_center_site.html', {'errmsg': '提交收件人信息不完整'})
+
+        # 验证手机号
+        if not re.match('^1[34578][0-9]{9}', phone):
+            return render(request, 'user_center_site.html', {'errmsg': '手机号有误'})
+
+        # 保存数据
+        user = request.user
+
+        # 判断用户是否有默认地址
+        addr = Address.objects.get_default_address(user)
+
+        if addr:
+            is_default = False
+        else:
+            is_default = True
+        # 保存用户地址
+        try:
+            addr = Address.objects.create(
+                user=user,
+                receiver=receiver,
+                addr=address,
+                zip_code=zip_code,
+                phone=phone,
+                is_default=is_default
+            )
+        except Exception:
+            return render(request, 'user_center_site.html', {'errmsg': '保存数据库失败'})
+
+        return redirect('user:address')
 
 
+class UserOrderView(LoginRequestMixIn, View):
+    """用户中心订单"""
+    def get(self, request):
+        return render(request, 'user_center_order.html', {'page': 'order'})
 
 
+class UserBaseInfoView(LoginRequestMixIn, View):
+    """用户中心基本信息"""
+    def get(self, request):
+        # 获取用户信息
+        user = request.user
+        try:
+            addr = Address.objects.get(user_id=user.id, is_default=True)
+        except Address.DoesNotExist:
+            addr = None
 
+        redis_conn = get_redis_connection('default')
+        sku_ids = redis_conn.lrange('history_%s' % user.id, 0, 4)
+
+        goods_list = []
+        for id in sku_ids:
+            try:
+                goods = GoodsSKU.objects.get(id=id)
+            except GoodsSKU.DoesNotExist:
+                pass
+            goods_list.append(goods)
+
+        return render(request, 'user_center_info.html', {'page': 'info', 'user_info': addr, 'goods_list': goods_list})

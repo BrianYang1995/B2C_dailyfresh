@@ -172,3 +172,16 @@ CACHES = {
 # 2.设置session缓存
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
+
+# 用户认证，登录地址
+LOGIN_URL = '/user/login'
+
+
+# 自定义文件存储
+DEFAULT_FILE_STORAGE = 'utils.fdfs.fdfs_storage.FDFSStorage'
+
+# fdfs client 配置
+FDFS_CLIENT_CONF = './utils/fdfs/client.conf'
+
+# 文件存储 ip
+FDFS_STORAGE_URL = 'http://127.0.0.1:8888/'

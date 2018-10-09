@@ -42,7 +42,7 @@ html,body{height:100%}
 .search_bar{width:1200px;height:115px;margin:0 auto;}
 .logo{width:150px;height:59px;margin:29px 0 0 17px;}
 
-.search_con{width:616px;height:38px;border:1px solid #37ab40;margin:34px 0 0 124px;background:url(../images/icons.png) 10px -338px no-repeat;}
+.search_con{width:616px;height:38px;border:1px solid #37ab40;margin:34px 0 0 124px;background:url(/static/images/icons.png) 10px -338px no-repeat;}
 .search_con .input_text{width:470px;height:34px;border:0px;margin:2px 0 0 36px;outline:none;font-size:12px;color:#737272;font-family:'Microsoft Yahei'}
 
 .search_con .input_btn{
