@@ -12,6 +12,11 @@
 				<span class="show_pirze">¥<em>{{ goods.price }}</em></span>
 				<span class="show_unit">单  位：{{ goods.unite }}</span>
 			</div>
+            <ul>
+                {% for goods in goods_list %}
+                    <li><a href="{% url 'goods:detail' goods.id %}">{{ goods.name }}</a></li>
+                {% endfor %}
+            </ul>
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
 				<div class="num_add fl">

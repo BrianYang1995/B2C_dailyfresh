@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.core.paginator import Paginator
 
 from goods.models import (
-    GoodsType, GoodsSKU, IndexGoodsBanner, IndexTypeGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner
+    GoodsType, GoodsSKU, IndexGoodsBanner, IndexTypeGoodsBanner, IndexPromotionBanner, IndexTypeGoodsBanner, Goods
 )
 from order.models import OrderGoods
 
@@ -84,10 +84,15 @@ class DetailView(View):
         except GoodsSKU.DoesNotExist:
             return redirect('goods:index')
 
+        # 获取同类spu信息
+        try:
+            goods_list = GoodsSKU.objects.filter(goods=goods.goods).exclude(id=goods.id)
+        except Exception:
+            goods_list = None
+
         # 获取所有种类信息
         types = cache.get('goods_types')
         if not types:
-            print('设置商品种类缓存')
             types = GoodsType.objects.all()
             cache.set('goods_types', types, 3600)
 
@@ -109,6 +114,10 @@ class DetailView(View):
             conn = django_redis.get_redis_connection('default')
             key = 'cart_%s' % user.id
             cart_count = conn.hlen(key)
+            history_key = 'history_%s'% user.id
+            conn.lrem(history_key, 0, goods_id)
+            conn.lpush(history_key, goods.id)
+            conn.ltrim(history_key, 0, 4)
 
         # 整理上下文
         context = {
@@ -117,6 +126,7 @@ class DetailView(View):
             'order_goods': order_goods,
             'new_goods': new_goods,
             'cart_count': cart_count,
+            'goods_list': goods_list,
         }
         return render(request, 'detail.html', context)
 
