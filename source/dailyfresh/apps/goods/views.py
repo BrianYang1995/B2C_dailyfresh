@@ -109,6 +109,7 @@ class DetailView(View):
             new_goods = None
 
         # 购物车
+        cart_count = 0
         user = request.user
         if user.is_authenticated:
             conn = django_redis.get_redis_connection('default')
@@ -195,6 +196,7 @@ class ListView(View):
             new_goods = None
 
         # 购物车
+        cart_count = 0
         user = request.user
         if user.is_authenticated:
             conn = django_redis.get_redis_connection('default')

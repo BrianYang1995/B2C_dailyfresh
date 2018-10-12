@@ -32,8 +32,9 @@
             <a href="#">{{ goods.type.name }}</a>
 		    <span>></span>
             <a href="#">商品详情</a>
-        {% else %}
+        {% elif type %}
             <a href="#">{{ type.name }}</a>
+
         {% endif %}
 
 

@@ -55,7 +55,7 @@
                 {% endfor %}
 
                 {% if page.has_next %}
-				    <a href="#{% url 'goods:list' type.id page.next_page_number %}?sort={{ sort }}">下一页</a>
+				    <a href="{% url 'goods:list' type.id page.next_page_number %}?sort={{ sort }}">下一页</a>
                 {% endif %}
 			</div>
 		</div>
