@@ -20,7 +20,7 @@
 			<div class="goods_num clearfix">
 				<div class="num_name fl">数 量：</div>
 				<div class="num_add fl">
-					<input type="text" class="num_show fl" value="1">
+					<input type="text" name="sku_count" sku_id="{{ goods.id }}" class="num_show fl" value="1">
 					<a href="javascript:;" class="add fr">+</a>
 					<a href="javascript:;" class="minus fr">-</a>	
 				</div> 
@@ -71,6 +71,7 @@
 
 		</div>
 	</div>
+    {% csrf_token %}
 {% endblock main %}
 
 {% block endelement %}
@@ -78,24 +79,88 @@
 {% endblock endelement %}
 
 {% block endfile %}
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src={% static "js/jquery-1.12.4.min.js" %}></script>
 	<script type="text/javascript">
-		var $add_x = $('#add_cart').offset().top;
+		var show = $('.num_show')
+        function total_price (data){
+		    var pirze = $('.show_pirze').children('em').text()
+            pirze = parseFloat(pirze)
+            var total = pirze*data.toFixed(2)
+            $('.total').children('em').text(total+'元')
+        }
+        $('.add').click(function () {
+            var data = show.val()
+            data = parseInt(data) + 1
+            show.val(data)
+            total_price(data)
+        })
+        $('.minus').click(function () {
+            var data = show.val()
+            data = parseInt(data) - 1
+            if (data <1){
+                data = 1
+            }
+            show.val(data)
+            total_price(data)
+        })
+
+        $('.num_show').focus(function () {
+            old_data = $(this).val()
+            old_data = parseInt(old_data)
+        })
+
+        $('.num_show').blur(function () {
+            var data = $(this).val()
+            if (isNaN(data) || data.trim() == '' || parseInt(data)<=0){
+                show.val(old_data)
+            } else {
+                data = parseInt(data)
+                show.val(data)
+                total_price(data)
+            }
+        })
+
+        var success = false
+        var cart_count = 0
+        $('.add_cart').click(function () {
+            count = show.val()
+            sku_id = show.attr('sku_id')
+            csrf = $('input[name=csrfmiddlewaretoken]').val()
+            params = {'sku_id': sku_id, 'sku_count': count, 'csrfmiddlewaretoken': csrf}
+
+
+            $.post('/cart/add', params, function (data) {
+                if (data.res == 9) {
+                    cart_count = data.cart_count
+                    anime()
+                } else {
+                    alert(data.errmsg)
+                }
+            })
+        })
+
+
+	    var $add_x = $('#add_cart').offset().top;
 		var $add_y = $('#add_cart').offset().left;
 
 		var $to_x = $('#show_count').offset().top;
 		var $to_y = $('#show_count').offset().left;
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
-			});
-		})
+
+		function anime () {
+		     $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'});
+
+                $(".add_jump").stop().animate({
+                    'left': $to_y+7,
+                    'top': $to_x+7},
+                    "fast", function() {
+                        $(".add_jump").fadeOut('fast',function(){
+                            $('#show_count').html(cart_count);
+                        });
+                });
+        }
+
+
+
 	</script>
 {% endblock endfile %}
