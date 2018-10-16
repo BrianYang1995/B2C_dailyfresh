@@ -6,13 +6,26 @@ from db.basemodel import BaseModel
 
 class User(AbstractUser, BaseModel):
     """用户模型"""
+
     class Meta:
         db_table = 'df_user'
         verbose_name = '用户'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.username
+        return str(self.username)
+
+
+class AddressManager(models.Manager):
+    """自定义Address模型管理器"""
+
+    def get_default_address(self, user):
+        try:
+            addr = Address.objects.get(user_id=user.id, is_default=True)
+        except Address.DoesNotExist:
+            addr = None
+
+        return addr
 
 
 class Address(BaseModel):
@@ -24,10 +37,11 @@ class Address(BaseModel):
     phone = models.CharField(max_length=11, verbose_name='联系方式')
     is_default = models.BooleanField(default=False, verbose_name='是否默认')
 
+    objects = AddressManager()
     class Meta:
         db_table = 'df_address'
         verbose_name = '地址'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.user
+        return str(self.user)

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tinymce',  # 富文本编辑器
+    'haystack',  # 全文检索框架
     'cart',  # 购物车模块
     'goods',  # 商品模块
     'user',  # 用户模块
@@ -145,3 +146,59 @@ TINYMCE_DEFAULT_CONFIG = {
     'height': 400,
 }
 
+# 发送邮件配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# smtp服务器地址
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+# 发送邮件邮箱
+EMAIL_HOST_USER = 'yangz_forwork@163.com'
+# 邮箱设置的授权
+EMAIL_HOST_PASSWORD = 'yang9110'
+# 收件人看到的发件人
+EMAIL_FROM = '天天生鲜<yangz_forwork@163.com>'
+
+
+# 1.django 缓存设置
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/9",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# 2.设置session缓存
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+# 用户认证，登录地址
+LOGIN_URL = '/user/login'
+
+
+# 自定义文件存储
+DEFAULT_FILE_STORAGE = 'utils.fdfs.fdfs_storage.FDFSStorage'
+
+# fdfs client 配置
+FDFS_CLIENT_CONF = './utils/fdfs/client.conf'
+
+# 文件存储 ip
+FDFS_STORAGE_URL = 'http://127.0.0.1:8888/'
+
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        # 使用whoosh搜索引擎
+        'ENGINE': 'haystack.backends.whoosh_cn_backend.WhooshEngine',
+        # 索引文件路径
+        'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
+    }
+}
+
+# print(os.path.join(BASE_DIR, 'whoosh_index'))
+#自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+# 每页显示搜索条数
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 8

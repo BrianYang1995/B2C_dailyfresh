@@ -20,8 +20,8 @@ from django.conf.urls import url, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^tinymce/', include('tinymce.urls')),
-
+    url(r'^tinymce/', include('tinymce.urls')),  # 富文本编辑器
+    url(r'^search', include('haystack.urls')),  # 全文检索框架
     # include方法中arg传入类型为元组，元组第一个参数为app路径，第二个为app_name
     url(r'^cart/', include(('cart.urls', 'cart'), namespace='cart')),  # 购物车模块
     url(r'^user/', include(('user.urls', 'user'), namespace='user')),  # 用户模块

@@ -1,0 +1,185 @@
+{% extends 'bace_detail_list.html' %}
+{% load staticfiles %}
+{% block title %}天天生鲜-商品详情{% endblock %}
+{% block main %}
+	<div class="goods_detail_con clearfix">
+		<div class="goods_detail_pic fl"><img src={{ goods.image.url }}></div>
+
+		<div class="goods_detail_list fr">
+			<h3>{{ goods.name }}</h3>
+			<p>{{ goods.desc }}</p>
+			<div class="prize_bar">
+				<span class="show_pirze">¥<em>{{ goods.price }}</em></span>
+				<span class="show_unit">单  位：{{ goods.unite }}</span>
+			</div>
+            <ul>
+                {% for goods in goods_list %}
+                    <li><a href="{% url 'goods:detail' goods.id %}">{{ goods.name }}</a></li>
+                {% endfor %}
+            </ul>
+			<div class="goods_num clearfix">
+				<div class="num_name fl">数 量：</div>
+				<div class="num_add fl">
+					<input type="text" name="sku_count" sku_id="{{ goods.id }}" class="num_show fl" value="1">
+					<a href="javascript:;" class="add fr">+</a>
+					<a href="javascript:;" class="minus fr">-</a>	
+				</div> 
+			</div>
+			<div class="total">总价：<em>{{ goods.price }}元</em></div>
+			<div class="operate_btn">
+				<a href="javascript:;" class="buy_btn">立即购买</a>
+				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>				
+			</div>
+		</div>
+	</div>
+
+	<div class="main_wrap clearfix">
+		<div class="l_wrap fl clearfix">
+			<div class="new_goods">
+				<h3>新品推荐</h3>
+				<ul>
+                    {% for goods in new_goods %}
+                        <li>
+                            <a href="{% url 'goods:detail' goods.id %}"><img src={{ goods.image.url }}></a>
+                            <h4><a href="{% url 'goods:detail' goods.id %}">{{ goods.name }}</a></h4>
+                            <div class="prize">￥{{ goods.price }}</div>
+					    </li>
+                    {% endfor %}
+				</ul>
+			</div>
+		</div>
+
+		<div class="r_wrap fr clearfix">
+			<ul class="detail_tab clearfix">
+				<li class="active" id="tag_content">商品介绍</li>
+				<li id="tag_comment" id="tag_comment">评论</li>
+			</ul>
+
+			<div class="tab_content">
+				<dl id="tab_content">
+					<dt>商品详情：</dt>
+					<dd>{{ goods.goods.detail|safe }}</dd>
+				</dl>
+
+                <dl id="tab_comment" style="display: none;">
+                    {% for order in order_goods %}
+                        <dt>{{ order.update_date }}-{{ order.order.user}}</dt>
+                        <dd>{{ order.comment }}</dd>
+                    {% empty %}
+                        <dt>暂无评论</dt>
+                    {% endfor %}
+                </dl>
+			</div>
+
+		</div>
+	</div>
+    {% csrf_token %}
+{% endblock main %}
+
+{% block endelement %}
+	<div class="add_jump"></div>
+{% endblock endelement %}
+
+{% block endfile %}
+	<script type="text/javascript" src={% static "js/jquery-1.12.4.min.js" %}></script>
+	<script type="text/javascript">
+        $('#tag_content').click(function () {
+            $(this).addClass('active')
+            $('#tab_content').show()
+            $('#tag_comment').removeClass('active')
+            $('#tab_comment').hide()
+        })
+
+         $('#tag_comment').click(function () {
+            $(this).addClass('active')
+            $('#tab_content').hide()
+            $('#tag_content').removeClass('active')
+            $('#tab_comment').show()
+        })
+
+
+
+
+		var show = $('.num_show')
+        function total_price (data){
+		    var pirze = $('.show_pirze').children('em').text()
+            pirze = parseFloat(pirze)
+            var total = pirze*data.toFixed(2)
+            $('.total').children('em').text(total+'元')
+        }
+        $('.add').click(function () {
+            var data = show.val()
+            data = parseInt(data) + 1
+            show.val(data)
+            total_price(data)
+        })
+        $('.minus').click(function () {
+            var data = show.val()
+            data = parseInt(data) - 1
+            if (data <1){
+                data = 1
+            }
+            show.val(data)
+            total_price(data)
+        })
+
+        $('.num_show').focus(function () {
+            old_data = $(this).val()
+            old_data = parseInt(old_data)
+        })
+
+        $('.num_show').blur(function () {
+            var data = $(this).val()
+            if (isNaN(data) || data.trim() == '' || parseInt(data)<=0){
+                show.val(old_data)
+            } else {
+                data = parseInt(data)
+                show.val(data)
+                total_price(data)
+            }
+        })
+
+        var success = false
+        var cart_count = 0
+        $('.add_cart').click(function () {
+            count = show.val()
+            sku_id = show.attr('sku_id')
+            csrf = $('input[name=csrfmiddlewaretoken]').val()
+            params = {'sku_id': sku_id, 'sku_count': count, 'csrfmiddlewaretoken': csrf}
+
+
+            $.post('/cart/add', params, function (data) {
+                if (data.res == 9) {
+                    cart_count = data.cart_count
+                    anime()
+                } else {
+                    alert(data.errmsg)
+                }
+            })
+        })
+
+
+	    var $add_x = $('#add_cart').offset().top;
+		var $add_y = $('#add_cart').offset().left;
+
+		var $to_x = $('#show_count').offset().top;
+		var $to_y = $('#show_count').offset().left;
+
+
+		function anime () {
+		     $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'});
+
+                $(".add_jump").stop().animate({
+                    'left': $to_y+7,
+                    'top': $to_x+7},
+                    "fast", function() {
+                        $(".add_jump").fadeOut('fast',function(){
+                            $('#show_count').html(cart_count);
+                        });
+                });
+        }
+
+
+
+	</script>
+{% endblock endfile %}

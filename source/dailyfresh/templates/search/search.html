@@ -1,0 +1,77 @@
+{% extends 'bace_goods.html' %}
+{% load staticfiles %}
+
+{% block title %}天天生鲜-商品搜索结果{% endblock title %}
+
+{% block content %}
+
+    <div class="navbar_con">
+		<div class="navbar clearfix">
+			<div class="subnav_con fl">
+				<h1>全部商品分类</h1>
+				<span></span>
+				<ul class="subnav">
+                    {% for type in types %}
+                        <li><a href="{% url 'goods:list' type.id 1 %}" class="{{ type.logo }}">{{ type.name }}</a></li>
+                    {% endfor %}
+				</ul>
+			</div>
+			<ul class="navlist fl">
+				<li><a href={% url 'goods:index' %}>首页</a></li>
+				<li class="interval">|</li>
+				<li><a href="">手机生鲜</a></li>
+				<li class="interval">|</li>
+				<li><a href="">抽奖</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="breadcrumb">
+		<a href="#">全部分类</a>
+		<span>></span>
+        <a href="#">{{ query }}</a>
+        <span>></span>
+        <a href="#">查询结果详情</a>
+	</div>
+
+	<div class="main_wrap clearfix">
+
+		<div class="r_wrap fr clearfix">
+
+			<ul class="goods_type_list clearfix">
+                {% for item in page.object_list %}
+                    <li>
+                        <a href="{% url 'goods:detail' item.object.id %}"><img src="{{ item.object.image.url }}"></a>
+                        <h4><a href="{% url 'goods:detail' item.object.id %}">{{ item.object.name }}</a></h4>
+                        <div class="operate">
+                            <span class="prize">￥{{ item.object.price }}</span>
+                            <span class="unit">{{ item.object.price }}/{{ item.object.unite }}</span>
+                            <a href="#" class="add_goods" title="加入购物车"></a>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <p>没有找到您要查询的商品</p>
+                {% endfor %}
+			</ul>
+
+			<div class="pagenation">
+                {% if page.has_previous %}
+				    <a href="/search?q={{ query }}&page={{ page.previous_page_number  }}">上一页</a>
+                {% endif %}
+
+                {% for index in paginator.page_range %}
+                    {% if index == page.number %}
+                        <a href="/search?q={{ query }}&page={{ index }}" class="active">{{ index }}</a>
+                    {% else %}
+				        <a href="/search?q={{ query }}&page={{ index }}">{{ index }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page.has_next %}
+				    <a href="/search?q={{ query }}&page={{ page.next_page_number }}">下一页</a>
+                {% endif %}
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
