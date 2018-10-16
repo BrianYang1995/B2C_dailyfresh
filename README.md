@@ -68,7 +68,7 @@
 
 #### 2.1 页面统计
 
-![1539674290564](https://github.com/BrianYang1995/B2C_dailyfresh/blob/master/images/1)
+![1539674290564](https://github.com/BrianYang1995/B2C_dailyfresh/blob/master/images/%E9%A1%B5%E9%9D%A2.png)
 
 #### 2.2 功能图
 
