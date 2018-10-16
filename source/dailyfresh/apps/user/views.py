@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.views.generic import View
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 
 
 from celery_task.tasks import send_register_active_email
@@ -13,6 +14,9 @@ from django_redis import get_redis_connection
 from utils.mixin import LoginRequestMixIn
 from user.models import User, Address
 from goods.models import GoodsSKU
+from order.models import OrderInfo
+from order.models import OrderGoods
+
 
 
 class RegisterView(View):
@@ -196,8 +200,64 @@ class UserAddressView(LoginRequestMixIn, View):
 
 class UserOrderView(LoginRequestMixIn, View):
     """用户中心订单"""
-    def get(self, request):
-        return render(request, 'user_center_order.html', {'page': 'order'})
+    def get(self, request, page):
+        # todo: 获取用户信息
+        user = request.user
+        # todo: 获取订单数据
+        try:
+            orders = OrderInfo.objects.filter(user=user).all().order_by('-create_date')
+        except OrderInfo.DoesNotExist:
+            orders = None
+
+        # todo: 循环获取订单商品
+        for order in orders:
+            try:
+                goods_list = OrderGoods.objects.filter(order=order).all()
+            except OrderGoods.DoesNotExist:
+                goods_list = None
+
+            order.goods_list = goods_list
+            order.status = OrderInfo.ORDER_STATUS[order.order_status]
+
+            # todo: 商品小计
+            if goods_list:
+                for goods in goods_list:
+                    price = float(goods.price)
+                    count = int(goods.count)
+
+                    goods.total_price = price * count
+
+        paginator = Paginator(orders, 2)
+
+        try:
+            page = int(page)
+        except Exception:
+            page = 1
+
+        if page > paginator.num_pages:
+            page = 1
+
+        num_pages = paginator.num_pages
+        if num_pages < 5:
+            page_list = range(1, num_pages + 1)
+        elif page <= 3:
+            page_list = range(1, 6)
+        elif page >= num_pages - 3:
+            page_list = range(num_pages - 4, num_pages + 1)
+        else:
+            page_list = range(page - 2, page + 3)
+
+        page = paginator.page(page)
+        print(page)
+
+        # todo: 整理上下文
+        context = {
+            'orders': page,
+            'page': 'order',
+            'page_list': page_list,
+        }
+
+        return render(request, 'user_center_order.html', context)
 
 
 class UserBaseInfoView(LoginRequestMixIn, View):

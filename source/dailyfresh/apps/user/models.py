@@ -13,7 +13,7 @@ class User(AbstractUser, BaseModel):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.username
+        return str(self.username)
 
 
 class AddressManager(models.Manager):
@@ -26,6 +26,7 @@ class AddressManager(models.Manager):
             addr = None
 
         return addr
+
 
 class Address(BaseModel):
     """用户地址模型"""
@@ -43,4 +44,4 @@ class Address(BaseModel):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return self.user
+        return str(self.user)

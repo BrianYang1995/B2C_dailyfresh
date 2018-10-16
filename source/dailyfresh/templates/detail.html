@@ -51,22 +51,24 @@
 
 		<div class="r_wrap fr clearfix">
 			<ul class="detail_tab clearfix">
-				<li class="active">商品介绍</li>
-				<li>评论</li>
+				<li class="active" id="tag_content">商品介绍</li>
+				<li id="tag_comment" id="tag_comment">评论</li>
 			</ul>
 
 			<div class="tab_content">
-				<dl>
+				<dl id="tab_content">
 					<dt>商品详情：</dt>
 					<dd>{{ goods.goods.detail|safe }}</dd>
 				</dl>
 
-                <dl>
+                <dl id="tab_comment" style="display: none;">
                     {% for order in order_goods %}
-                        <dt>{{ order.update_time }}-{{ order.order.user.name}}</dt>
-                        <dd>{{ order.commit }}</dd>
+                        <dt>{{ order.update_date }}-{{ order.order.user}}</dt>
+                        <dd>{{ order.comment }}</dd>
+                    {% empty %}
+                        <dt>暂无评论</dt>
                     {% endfor %}
-					</dl>
+                </dl>
 			</div>
 
 		</div>
@@ -81,6 +83,23 @@
 {% block endfile %}
 	<script type="text/javascript" src={% static "js/jquery-1.12.4.min.js" %}></script>
 	<script type="text/javascript">
+        $('#tag_content').click(function () {
+            $(this).addClass('active')
+            $('#tab_content').show()
+            $('#tag_comment').removeClass('active')
+            $('#tab_comment').hide()
+        })
+
+         $('#tag_comment').click(function () {
+            $(this).addClass('active')
+            $('#tab_content').hide()
+            $('#tag_content').removeClass('active')
+            $('#tab_comment').show()
+        })
+
+
+
+
 		var show = $('.num_show')
         function total_price (data){
 		    var pirze = $('.show_pirze').children('em').text()

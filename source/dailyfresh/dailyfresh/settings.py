@@ -197,6 +197,7 @@ HAYSTACK_CONNECTIONS = {
     }
 }
 
+# print(os.path.join(BASE_DIR, 'whoosh_index'))
 #自动生成索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 # 每页显示搜索条数

@@ -98,7 +98,7 @@ class DetailView(View):
 
         # 获取评论信息
         try:
-            order_goods = OrderGoods.objects.filter(sku=goods).exclude(commit='')
+            order_goods = OrderGoods.objects.filter(sku=goods).exclude(comment='')
         except OrderGoods.DoesNotExist:
             order_goods = None
 
