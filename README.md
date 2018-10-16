@@ -68,12 +68,11 @@
 
 #### 2.1 页面统计
 
-![1539674290564](/tmp/1539674290564.png)
+![1539674290564](https://github.com/BrianYang1995/B2C_dailyfresh/blob/master/images/1539674400785.png)
 
 #### 2.2 功能图
 
-![1539674400785](/tmp/1539674400785.png)
-
+![1539674400785](https://github.com/BrianYang1995/B2C_dailyfresh/blob/master/images/%E5%8A%9F%E8%83%BD%E5%9B%BE.png)
 
 
 ### 3.技术栈
